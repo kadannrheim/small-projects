@@ -58,5 +58,25 @@ terraform.rc
 *.tgz
 *.7z
 
-# Игнорировать backup
+# Секреты
+*.env
+!.env.example
+secrets/
+keys/
+*.key
+*.pem
+*.crt
+
+# Резервные копии
+*_backup*
+*_old*
+*.bak
+*.backup
 *_backup
+
+# Питон
+__pycache__/
+*.py[cod]
+.env/
+.venv/
+venv/
