@@ -23,3 +23,40 @@ www-test/
 
 #old GWT (1.5) created this dir
 .gwt-tmp/
+
+----
+
+# Игнорировать папку .terraform
+.terraform/
+
+# Игнорировать файлы состояния Terraform
+*.tfstate
+*.tfstate.*
+
+# Игнорировать файлы блокировки Terraform
+.terraform.lock.hcl
+
+# Игнорировать crash.log (если есть)
+crash.log
+
+# Игнорировать планы Terraform
+*.tfplan
+
+# Игнорировать файлы переменных (если используются)
+*.tfvars
+
+# Игнорировать локальные файлы конфигурации
+.terraformrc
+terraform.rc
+
+# Игнорировать ключи подключения
+*.pem
+*.pub
+
+# Игнорировать архивы
+*.tar
+*.tgz
+*.7z
+
+# Игнорировать backup
+*_backup
