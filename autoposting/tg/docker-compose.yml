@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  telegram-quotes:
+    build: ./telegram/quotes
+    container_name: telegram-quotes-bot
+    restart: unless-stopped
+    environment:
+      - BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - CHANNEL_ID=${TELEGRAM_CHANNEL_ID}
+      - BASE_HOUR=${BASE_HOUR:-9}
+      - BASE_MINUTE=${BASE_MINUTE:-0}
+      - RANDOM_RANGE_MINUTES=${RANDOM_RANGE_MINUTES:-30}
+    env_file:
+      - .env  # Файл снаружи контейнера
+    volumes:
+      - ./telegram/quotes/data:/app/data
+      - ./logs:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
