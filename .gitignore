@@ -1,82 +1,172 @@
-*.class
+# ============================================
+# СЕКРЕТЫ И КОНФИГУРАЦИЯ
+# ============================================
 
-# Package Files #
-*.jar
-*.war
-
-# gwt caches and compiled units #
-war/gwt_bree/
-gwt-unitCache/
-
-# boilerplate generated classes #
-.apt_generated/
-
-# more caches and things from deploy #
-war/WEB-INF/deploy/
-war/WEB-INF/classes/
-
-#compilation logs
-.gwt/
-
-#gwt junit compilation files
-www-test/
-
-#old GWT (1.5) created this dir
-.gwt-tmp/
-
-----
-
-# Игнорировать папку .terraform
-.terraform/
-
-# Игнорировать файлы состояния Terraform
-*.tfstate
-*.tfstate.*
-
-# Игнорировать файлы блокировки Terraform
-.terraform.lock.hcl
-
-# Игнорировать crash.log (если есть)
-crash.log
-
-# Игнорировать планы Terraform
-*.tfplan
-
-# Игнорировать файлы переменных (если используются)
-*.tfvars
-
-# Игнорировать локальные файлы конфигурации
-.terraformrc
-terraform.rc
-
-# Игнорировать ключи подключения
-*.pem
-*.pub
-
-# Игнорировать архивы
-*.tar
-*.tgz
-*.7z
-
-# Секреты
+# Файлы окружения
 *.env
 !.env.example
+.env.local
+
+# Ключи и сертификаты
 secrets/
 keys/
 *.key
 *.pem
 *.crt
+*.pub
 
-# Резервные копии
+# Terraform секреты
+*.tfvars
+
+# ============================================
+# ПАКЕТЫ И АРХИВЫ
+# ============================================
+
+# Java
+*.class
+*.jar
+*.war
+
+# Архивы
+*.tar
+*.tgz
+*.7z
+
+# ============================================
+# IDE И РАБОЧИЕ ФАЙЛЫ
+# ============================================
+
+# VS Code
+.vscode/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Редакторы
+*.swp
+*.swo
+
+# ============================================
+# ТЕРРАФОРМ
+# ============================================
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+*.tfplan
+.terraformrc
+terraform.rc
+
+# ============================================
+# ПАЙТОН
+# ============================================
+
+# Кэш и байт-код
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.python-version
+
+# Виртуальные окружения
+env/
+venv/
+.venv/
+env.bak/
+venv.bak/
+.env/
+.venv/
+
+# ============================================
+# GWT (Google Web Toolkit)
+# ============================================
+
+# GWT
+war/gwt_bree/
+gwt-unitCache/
+.apt_generated/
+war/WEB-INF/deploy/
+war/WEB-INF/classes/
+.gwt/
+www-test/
+.gwt-tmp/
+
+# ============================================
+# ДОКЕР И ЛОГИ
+# ============================================
+
+# Логи
+*.log
+logs/
+crash.log
+
+# Docker данные
+data/
+
+# ============================================
+# РЕЗЕРВНЫЕ КОПИИ
+# ============================================
+
+# Общие паттерны бэкапов
 *_backup*
 *_old*
 *.bak
 *.backup
-*_backup
 
-# Питон
-__pycache__/
-*.py[cod]
-.env/
-.venv/
-venv/
+# Конкретные файлы бэкапов
+bot.py_backup*
+quotes.txt_backup
+
+# ============================================
+# СБОРКИ И КОМПИЛЯЦИИ
+# ============================================
+
+# Временные файлы сборки
+build/
+dist/
+*.egg-info/
+
+# ============================================
+# ОПЕРАЦИОННЫЕ СИСТЕМЫ
+# ============================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+
+# ============================================
+# ТЕСТЫ
+# ============================================
+
+# Результаты тестов
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+test-reports/
+
+# ============================================
+# СПЕЦИФИЧНЫЕ ФАЙЛЫ
+# ============================================
+
+# Cпецифичные файлы согласно проектам
+## Цитаты
+telegram-quotes.env
+news-poster.env
+quotes365.json
