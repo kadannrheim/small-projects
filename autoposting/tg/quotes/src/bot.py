@@ -8,8 +8,8 @@ import datetime
 import logging
 from typing import List, Dict, Optional
 
-from .config import config
-from .utils import setup_logger, graceful_shutdown
+from config import config
+from utils import setup_logger, graceful_shutdown
 
 # Настройка логирования
 logger = setup_logger(__name__, config.log_level, config.log_file)
