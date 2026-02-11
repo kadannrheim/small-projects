@@ -12,7 +12,7 @@ services:
       - BASE_MINUTE=${BASE_MINUTE:-0}
       - RANDOM_RANGE_MINUTES=${RANDOM_RANGE_MINUTES:-30}
     env_file:
-      - .env  # Файл снаружи контейнера
+      - ./quotes/.env  # Файл снаружи контейнера
     volumes:
       - ./tg/quotes/data:/app/data
       - ./logs:/app/logs
