@@ -10,8 +10,8 @@ load_dotenv(env_path)
 class Config:
     """Конфигурация приложения"""
     # Telegram
-    bot_token: str = os.getenv('BOT_TOKEN', '')
-    channel_id: str = os.getenv('CHANNEL_ID', '')
+    bot_token: str = os.getenv('TG_Q_BOT_TOKEN', '')
+    channel_id: str = os.getenv('TG_Q_CHANNEL_ID', '')
     
     # Scheduler
     base_hour: int = int(os.getenv('BASE_HOUR', '9'))
@@ -28,9 +28,9 @@ class Config:
     def validate(self) -> bool:
         """Проверяет обязательные поля"""
         if not self.bot_token:
-            raise ValueError("BOT_TOKEN не указан в .env файле")
+            raise ValueError("TG_Q_BOT_TOKEN не указан в .env файле")
         if not self.channel_id:
-            raise ValueError("CHANNEL_ID не указан в .env файле")
+            raise ValueError("TG_Q_CHANNEL_ID не указан в .env файле")
         return True
 
 # Глобальный объект конфигурации

@@ -6,11 +6,11 @@ services:
     container_name: telegram-quotes-bot
     restart: unless-stopped
     environment:
-      - BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - CHANNEL_ID=${TELEGRAM_CHANNEL_ID}
-      - BASE_HOUR=${BASE_HOUR:-9}
-      - BASE_MINUTE=${BASE_MINUTE:-0}
-      - RANDOM_RANGE_MINUTES=${RANDOM_RANGE_MINUTES:-30}
+      - TG_Q_BOT_TOKEN=${TG_Q_BOT_TOKEN}
+      - TG_Q_CHANNEL_ID=${TG_Q_CHANNEL_ID}
+      - TG_Q_BASE_HOUR=${BASE_HOUR:-9}
+      - TG_Q_BASE_MINUTE=${BASE_MINUTE:-0}
+      - TG_Q_RANDOM_RANGE_MINUTES=${RANDOM_RANGE_MINUTES:-30}
     env_file:
       - ./quotes/.env  # Файл снаружи контейнера
     volumes:
