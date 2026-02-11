@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем зависимости
-COPY requirements.txt .
+COPY requirements .
 
 # Устанавливаем Python зависимости
 RUN pip install --no-cache-dir -r requirements.txt
@@ -24,9 +24,9 @@ RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
 USER botuser
 
 # Указываем переменные окружения (переопределяются через docker-compose)
-ENV BOT_TOKEN=""
-ENV CHANNEL_ID=""
-ENV LOG_LEVEL="INFO"
+# ENV BOT_TOKEN=""
+# ENV CHANNEL_ID=""
+# ENV LOG_LEVEL="INFO"
 
 # Запускаем наш скрипт
 CMD ["python", "src/bot.py"]

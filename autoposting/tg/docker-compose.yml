@@ -14,7 +14,7 @@ services:
     env_file:
       - ./quotes/.env  # Файл снаружи контейнера
     volumes:
-      - ./tg/quotes/data:/app/data
+      - ./quotes/data:/app/data
       - ./logs:/app/logs
     logging:
       driver: "json-file"
