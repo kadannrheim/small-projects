@@ -14,7 +14,7 @@ services:
     env_file:
       - .env  # Файл снаружи контейнера
     volumes:
-      - ./telegram/quotes/data:/app/data
+      - ./tg/quotes/data:/app/data
       - ./logs:/app/logs
     logging:
       driver: "json-file"
