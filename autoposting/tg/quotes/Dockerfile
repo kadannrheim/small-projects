@@ -1,5 +1,5 @@
 # Используем легковесный Python образ
-FROM python:3.11-slim
+FROM python:3.11-sli
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -13,20 +13,22 @@ RUN apt-get update && apt-get install -y \
 COPY requirements .
 
 # Устанавливаем Python зависимости
-RUN pip install --no-cache-dir -r requirements
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем исходный код
 COPY src/ ./src/
 COPY data/ ./data/
 
-# Создаем пользователя для безопасности
-RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
-USER botuser
+# Создаем пользователя ДО создания папки логов
+RUN useradd -m -u 1000 botuser
 
-# Указываем переменные окружения (переопределяются через docker-compose)
-# ENV BOT_TOKEN=""
-# ENV CHANNEL_ID=""
-# ENV LOG_LEVEL="INFO"
+# Создаем папку для логов и назначаем владельца
+RUN mkdir -p /app/logs && \
+    chown -R botuser:botuser /app && \
+    chmod 755 /app/logs
+
+# Переключаемся на пользователя
+USER botuser
 
 # Запускаем наш скрипт
 CMD ["python", "src/bot.py"]
