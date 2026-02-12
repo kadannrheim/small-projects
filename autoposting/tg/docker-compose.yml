@@ -5,12 +5,12 @@ services:
     build: ./quotes
     container_name: telegram-quotes-bot
     restart: unless-stopped
-    environment:
-      - TG_Q_BOT_TOKEN=${TG_Q_BOT_TOKEN}
-      - TG_Q_CHANNEL_ID=${TG_Q_CHANNEL_ID}
-      - TG_Q_BASE_HOUR=${TG_Q_BASE_HOUR:-9}
-      - TG_Q_BASE_MINUTE=${TG_Q_BASE_MINUTE:-0}
-      - TG_Q_RANDOM_RANGE_MINUTES=${TG_Q_RANDOM_RANGE_MINUTES:-30}
+    #environment: # конфиги в .env только, в контейнере его нет
+    #  - TG_Q_BOT_TOKEN=${TG_Q_BOT_TOKEN}
+    #  - TG_Q_CHANNEL_ID=${TG_Q_CHANNEL_ID}
+    #  - TG_Q_BASE_HOUR=${TG_Q_BASE_HOUR:-9}
+    #  - TG_Q_BASE_MINUTE=${TG_Q_BASE_MINUTE:-0}
+    #  - TG_Q_RANDOM_RANGE_MINUTES=${TG_Q_RANDOM_RANGE_MINUTES:-30}
     env_file:
       - ./quotes/.env  # Файл снаружи контейнера
     volumes:
