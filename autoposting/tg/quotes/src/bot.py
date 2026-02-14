@@ -51,9 +51,9 @@ def send_quote():
     
     logger.info(f"Отправляю цитату: {quote_data['text'][:50]}...")
     
-    url = f'https://api.telegram.org/bot{config.tg_q_bot_token}/sendMessage'
+    url = f'https://api.telegram.org/bot{config.tg_q_bot_token}/sendMessage'  # ✅ используем tg_q_bot_token
     payload = {
-        'chat_id': config.tg_q_channel_id,
+        'chat_id': config.tg_q_channel_id,  # ✅ используем tg_q_channel_id
         'text': formatted_quote
     }
     
