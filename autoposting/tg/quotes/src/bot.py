@@ -10,6 +10,7 @@ from typing import List, Dict, Optional
 
 from config import config
 from utils import setup_logger, graceful_shutdown
+from history import history
 
 # Настройка логирования
 logger = setup_logger(__name__, config.log_level, config.log_file)
@@ -28,6 +29,29 @@ def load_quotes() -> List[Dict]:
         logger.error(f"Ошибка JSON в файле '{config.quotes_file}': {e}")
         return []
 
+# ============= ЕДИНСТВЕННАЯ ФУНКЦИЯ get_unique_quote =============
+def get_unique_quote(quotes: List[Dict]) -> Dict:
+    """Выбирает уникальную цитату. Если все использованы - начинает новый цикл"""
+    
+    # Получаем доступные цитаты (не публиковавшиеся 365 дней)
+    available = history.get_available_quotes(quotes, days=365)
+    
+    # Если есть доступные - выбираем случайную
+    if available:
+        quote = random.choice(available)
+        total = len(quotes)
+        used = total - len(available)
+        logger.info(f"📊 Использовано {used}/{total} цитат в этом цикле")
+        return quote
+    
+    # Если нет доступных - СБРАСЫВАЕМ ИСТОРИЮ и начинаем заново
+    logger.info("🔄 Все цитаты использованы! Начинаем новый годовой цикл...")
+    history.reset_history()
+    
+    # Теперь все цитаты снова доступны
+    return random.choice(quotes)
+# ==================================================================
+
 def format_quote(quote_data: Dict) -> str:
     """Форматирует цитату"""
     text = quote_data.get('text', '')
@@ -37,8 +61,8 @@ def format_quote(quote_data: Dict) -> str:
     return f"{text}\n\n{author}\n\n{hashtag}"
 
 def send_quote():
-    """Выбирает случайную цитату и отправляет ее в канал"""
-    import requests  # Локальный импорт для лучшей изоляции
+    """Выбирает цитату и отправляет ее в канал"""
+    import requests
     
     quotes = load_quotes()
     
@@ -46,14 +70,16 @@ def send_quote():
         logger.warning("Не могу отправить цитату. Список цитат пуст.")
         return
     
-    quote_data = random.choice(quotes)
+    # Получаем цитату (теперь всегда получаем)
+    quote_data = get_unique_quote(quotes)
     formatted_quote = format_quote(quote_data)
+    quote_text = quote_data.get('text', '')
     
-    logger.info(f"Отправляю цитату: {quote_data['text'][:50]}...")
+    logger.info(f"Отправляю цитату: {quote_text[:50]}...")
     
-    url = f'https://api.telegram.org/bot{config.tg_q_bot_token}/sendMessage'  # ✅ используем tg_q_bot_token
+    url = f'https://api.telegram.org/bot{config.tg_q_bot_token}/sendMessage'
     payload = {
-        'chat_id': config.tg_q_channel_id,  # ✅ используем tg_q_channel_id
+        'chat_id': config.tg_q_channel_id,
         'text': formatted_quote
     }
     
@@ -61,6 +87,11 @@ def send_quote():
         response = requests.post(url, data=payload, timeout=10)
         if response.status_code == 200:
             logger.info("✅ Цитата успешно отправлена!")
+            # Отмечаем цитату как опубликованную
+            history.mark_published(quote_text)
+            # Показываем статистику
+            stats = history.get_stats()
+            logger.info(f"📈 Всего уникальных публикаций: {stats['total']}")
         else:
             logger.error(f"❌ Ошибка Telegram API: {response.status_code}")
             logger.error(f"Детали: {response.text}")
@@ -120,6 +151,12 @@ def main():
     if not quotes:
         logger.error("Не удалось загрузить цитаты!")
         sys.exit(1)
+    
+    # Показываем статистику истории
+    stats = history.get_stats()
+    logger.info(f"📊 История публикаций: всего {stats['total']} цитат")
+    if stats['last_30_days'] > 0:
+        logger.info(f"📊 За последние 30 дней: {stats['last_30_days']} публикаций")
     
     # Тестовая отправка при старте
     logger.info("Отправляю тестовую цитату при старте...")
