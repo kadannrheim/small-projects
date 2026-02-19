@@ -2,11 +2,12 @@
 
 Бот для автоматической публикации цитат в Telegram канал.
 Секреты в менеджере паролей
-Конфиги синхронизируйте через облако
-Cloud/Sync/autoposting-config/
-├── telegram-quotes.env
-└── news-poster.env
-
+Конфиги синхронизируйте через облако или локально через симлинк
+data
+├── quotes356.json
+└── published_history.json
+quotes
+└── .env
 
 ## Установка
 
@@ -77,7 +78,7 @@ git commit -m "Initial commit: Telegram quotes bot with proper structure"
 ## 5. Хранение персоналифицированной информации. 
 Хранится отдельно локально\облачная папка, создаётся симлинк для добавления цитат в проект через cmd:
 
-### Хранение цитат
+### Хранение цитат (windows симлинк)
 ```md   
 # Запустите cmd от имени Администратора
 # (Win + R → cmd → Ctrl+Shift+Enter)
@@ -89,7 +90,7 @@ cd [локальный путь]git\small-projects\autoposting\tg\quotes\data
 mklink quotes365.json "[локальный путь]quotes\quotes365.json"
 ```
 
-### Хранение конфига .env
+### Хранение конфига .env (windows симлинк)
 ```md   
 # Запустите cmd от имени Администратора
 # (Win + R → cmd → Ctrl+Shift+Enter)
