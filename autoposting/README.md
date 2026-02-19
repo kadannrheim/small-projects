@@ -2,10 +2,11 @@
 
 Бот для автоматической публикации цитат в Telegram канал.
 Секреты в менеджере паролей
-Конфиги синхронизируйте через облако
-Cloud/Sync/autoposting-config/
-├── telegram-quotes.env
-└── news-poster.env
+Конфиги синхронизируйте через облако или добавляются вручную
+quotes\
+├── .env #секреты 
+  data \
+  └── quotes365.json #файл с цитатами
 
 
 ## Установка
@@ -14,12 +15,11 @@ Cloud/Sync/autoposting-config/
 2. Создайте файл `.env` на основе `.env.example`:
    ```bash
    cp .env.example .env
-
 3. Заполните .env своими значениями:
 Получите токен бота у @BotFather
 Укажите ID вашего канала (например, @mychannel)
 4. Установите зависимости:
-`pip install -r requirements.txt`
+`pip install -r requirements`
 ----
 # Запуск
 ## Локально
@@ -75,9 +75,9 @@ git commit -m "Initial commit: Telegram quotes bot with proper structure"
 ```
 
 ## 5. Хранение персоналифицированной информации. 
-Хранится отдельно локально\облачная папка, создаётся симлинк для добавления цитат в проект через cmd:
+Хранится отдельно локально\облачная папка, создаётся симлинк для добавления цитат в проект через cmd, если запускается локально проект а папка с гитом (.env добавляется в .gitignore):
 
-### Хранение цитат
+### Хранение цитат (windows симлинк)
 ```md   
 # Запустите cmd от имени Администратора
 # (Win + R → cmd → Ctrl+Shift+Enter)
@@ -89,7 +89,7 @@ cd [локальный путь]git\small-projects\autoposting\tg\quotes\data
 mklink quotes365.json "[локальный путь]quotes\quotes365.json"
 ```
 
-### Хранение конфига .env
+### Хранение конфига .env (windows симлинк)
 ```md   
 # Запустите cmd от имени Администратора
 # (Win + R → cmd → Ctrl+Shift+Enter)
