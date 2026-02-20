@@ -19,8 +19,8 @@ class Config:
     random_range_minutes: int = int(os.getenv('TG_Q_RANDOM_RANGE_MINUTES', '30'))
     
     # Files
-    quotes_file: str = os.getenv('QUOTES_FILE', 'data/quotes365.json')
-    history_file: str = os.getenv('HISTORY_FILE', 'data/published_history.json')  # Новый файл истории
+    quotes_file: str = os.getenv('QUOTES_FILE', '../data/quotes365.json')
+    history_file: str = os.getenv('HISTORY_FILE', '../data/published_history.json')  # Новый файл истории
     
     # Logging
     log_level: str = os.getenv('LOG_LEVEL', 'INFO')

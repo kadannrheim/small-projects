@@ -1,13 +1,46 @@
 # Telegram Quotes Bot
 
 Бот для автоматической публикации цитат в Telegram канал.
+
+# Файловая структура
+```
+.
+├── autoposting
+│   ├── README.md
+│   └── tg
+│       ├── docker-compose.yml
+│       ├── logs
+│       │   └── bot.log
+│       └── quotes
+│           ├── data
+│           │   ├── published_history.json
+│           │   ├── quotes365.json
+│           │   └── quotes-example.json
+│           ├── Dockerfile
+│           ├── .env
+│           ├── .env.example
+│           ├── requirements
+│           └── src
+│               ├── bot.py
+│               ├── config.py
+│               ├── history.py
+│               └── utils.py
+└── README.md
+└── notes.md
+└── .gitignore
+```
+# Хранение секретов
 Секреты в менеджере паролей
-Конфиги синхронизируйте через облако или локально через симлинк
-data
-├── quotes356.json
-└── published_history.json
-quotes
-└── .env
+Конфиги синхронизируйте через облако или локально через симлинк (что бы не попали в гит или добавьте файл .env в gitignore), чувствительные данные (включая цитаты) находятся в файлах (в проекте они добавлены в gitignore): 
+```
+tg
+├── bot.log
+  quotes
+  └── .env
+    data
+    ├── quotes356.json
+    └── published_history.json
+```
 
 ## Установка
 
@@ -22,7 +55,7 @@ quotes
 4. Установите зависимости:
 `pip install -r requirements.txt`
 ----
-# Запуск
+# Запуск (в проекте использовал основной через docker-compose с .env = "docker-compose up -d", дополнительные указаны для отладки)
 ## Локально
 `python src/bot.py`
 ## Docker
@@ -37,11 +70,13 @@ docker run -d --name quotes-bot \
 ```
 ----
 # Основные настройки в .env файле:
+```
 BOT_TOKEN - токен бота от @BotFather
 CHANNEL_ID - ID канала (начинается с @)
 BASE_HOUR - час публикации (по умолчанию 9)
 BASE_MINUTE - минута публикации (по умолчанию 0)
 RANDOM_RANGE_MINUTES - случайное смещение в минутах (по умолчанию ±30)
+```
 ----
 # Добавление цитат
 ## Добавляйте цитаты в файл data/quotes.json в формате:
@@ -56,26 +91,13 @@ RANDOM_RANGE_MINUTES - случайное смещение в минутах (п
 ```
 ----
 # Развёртывание
-## 1. Инициализируйте git:
+## 1. Инициализируйте git (ветка main):
 ```bash
-cd autoposting
 git init
-echo "# Autoposting Project" > README.md
-cp telegram/quotes/.env.example .env.example  # Копируем шаблон
-```
-## 3. Создайте реальный .env файл:
-```bash
-cd telegram/quotes
-cp .env.example .env
-# Отредактируйте .env своими секретами
-```
-## 4. Добавьте в git
-```bash
-git add .
-git commit -m "Initial commit: Telegram quotes bot with proper structure"
+git clone https://github.com/kadannrheim/small-projects.git
 ```
 
-## 5. Хранение персоналифицированной информации. 
+## 5. Хранение персоналифицированной информации (для тех кто разворачивает на своём пк). 
 Хранится отдельно локально\облачная папка, создаётся симлинк для добавления цитат в проект через cmd:
 
 ### Хранение цитат (windows симлинк)
@@ -107,7 +129,40 @@ mklink .env "[локальный путь]quotes\config\telegram-quotes.env"
 ---
 # Версионность
 1. Создаётся ветка fix для фикса, feature для для новой функциональности
+```
 main (стабильная)
 └── dev (разработка) после тестов идёт в main
     ├── feature/*
     └── fix/*
+```
+## Описание наименовая коммитов 
+
+### Основные типы:
+
+| Тип | Когда использовать |
+|-----|-------------------|
+| **feat** | Новая функциональность |
+| **fix** | Исправление бага |
+| **docs** | Изменения в документации |
+| **style** | Форматирование, отступы, точки с запятой (не влияет на код) |
+| **refactor** | Рефакторинг кода (не фикс и не новая фича) |
+| **perf** | Изменения для улучшения производительности |
+| **test** | Добавление или исправление тестов |
+| **chore** | Обновление задач, настройка (не влияет на код) |
+| **build** | Сборка, зависимости |
+| **ci** | Настройка CI/CD |
+
+---
+### Если нужно подробнее — добавляется тело коммита
+
+```
+feat: add password reset functionality
+
+- Add reset password endpoint
+- Send email with reset link
+- Add validation for token expiration
+```
+
+# Указание тэгов
+
+`git tag -a v1.0.0 -m "Release version 1.0.0"`

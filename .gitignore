@@ -101,6 +101,7 @@ www-test/
 *.log
 logs/
 crash.log
+bot.log
 
 # Docker данные
 *docker*/data/
