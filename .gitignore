@@ -169,3 +169,4 @@ test-reports/
 telegram-quotes.env
 news-poster.env
 quotes365.json
+published_history.json
