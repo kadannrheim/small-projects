@@ -24,7 +24,7 @@
 │           ├── get-real-digest.sh
 │           ├── .env
 │           ├── .env.example
-│           ├── requirements
+│           ├── requirements.txt
 │           └── src
 │               ├── bot.py
 │               ├── config.py
@@ -77,7 +77,7 @@ cp .env.example .env
 ### 4. Установка зависимостей
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt.txt
 ```
 
 ---

@@ -21,9 +21,9 @@ RUN apk update && \
 
 WORKDIR /app
 
-COPY requirements .
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt.txt
 
 RUN addgroup -g 1000 -S botgroup && \
     adduser -u 1000 -S botuser -G botgroup

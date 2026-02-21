@@ -26,7 +26,7 @@ coaching_tools/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── .env.example
-├── requirements.txt
+├── requirements.txt.txt
 ├── README.md
 ├── data/
 │   ├── coaching_tools.json

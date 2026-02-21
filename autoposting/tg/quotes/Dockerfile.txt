@@ -48,13 +48,13 @@ RUN apk update && \
 WORKDIR /app
 
 # Копируем зависимости
-COPY requirements .
+COPY requirements.txt .
 
 # -----------------------------------------------------------------------------
 # УСТАНОВКА PYTHON ЗАВИСИМОСТЕЙ
 # -----------------------------------------------------------------------------
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements
+    pip install --no-cache-dir -r requirements.txt
 
 # Создаем пользователя
 RUN addgroup -g 1000 -S botgroup && \

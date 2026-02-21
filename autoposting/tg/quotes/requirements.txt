@@ -6,10 +6,10 @@
 # Формат: пакет==версия  (фиксация версий для воспроизводимости)
 #
 # Установка всех зависимостей:
-#   pip install -r requirements
+#   pip install -r requirements.txt
 #
 # Обновление зависимостей (с осторожностью):
-#   pip install --upgrade -r requirements
+#   pip install --upgrade -r requirements.txt
 #
 # =============================================================================
 
