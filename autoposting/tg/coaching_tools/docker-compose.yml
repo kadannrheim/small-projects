@@ -1,0 +1,21 @@
+# docker-compose.yml для Coaching Tools Bot
+# =============================================================================
+
+version: '3.8'
+
+services:
+  telegram-coaching:
+    build: .
+    container_name: telegram-coaching-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    user: "1000:1000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
