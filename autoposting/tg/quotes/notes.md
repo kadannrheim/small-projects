@@ -77,7 +77,7 @@ cp .env.example .env
 ### 4. Установка зависимостей
 
 ```bash
-pip install -r requirements.txt.txt
+pip install -r requirements.txt
 ```
 
 ---
