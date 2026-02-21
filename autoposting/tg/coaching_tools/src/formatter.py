@@ -22,16 +22,6 @@ def format_tool(tool_data: Dict[str, Any]) -> str:
     Returns:
         str: Отформатированный пост для публикации
     """
-    # Эмодзи для разных типов инструментов
-    type_emojis = {
-        "exercise": "⚖️",
-        "technique": "🔍", 
-        "tool": "📊"
-    }
-    
-    # Эмодзи по умолчанию
-    emoji = type_emojis.get(tool_data.get('type', ''), '🛠️')
-    
     # Извлекаем данные
     title = tool_data.get('title', 'Коучинговый инструмент')
     content = tool_data.get('content', '')
@@ -54,7 +44,7 @@ def format_tool(tool_data: Dict[str, Any]) -> str:
     ]
     
     # Собираем пост
-    formatted = f"{emoji} {title}\n\n{content}\n\n"
+    formatted = f"{title}\n\n{content}\n\n"
     
     if duration:
         formatted += f"⏱️ {duration} минут | Автор: {author}\n\n"
