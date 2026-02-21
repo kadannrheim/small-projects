@@ -7,14 +7,14 @@
 # Запустите ./get-real-digest.sh для получения актуального значения.
 #
 # Актуальный digest на 20.02.2026:
-#   python:3.11-alpine@sha256:de4c8c2cbb11a3e7b36a48e32c6f2b6c8d9e3f7a4b5c2d1e8f7a3b6c9d4e2f1a5
+#   python:3.11-alpine@sha256:303398d5c9f110790bce60d64f902e51e1a061e33292985c72bf6cd07960bf09
 #
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # БАЗОВЫЙ ОБРАЗ С АКТУАЛЬНЫМ DIGEST (ОБНОВЛЕНО 20.02.2026)
 # -----------------------------------------------------------------------------
-FROM python:3.11-alpine@sha256:de4c8c2cbb11a3e7b36a48e32c6f2b6c8d9e3f7a4b5c2d1e8f7a3b6c9d4e2f1a5
+FROM python:3.11-alpine@sha256:303398d5c9f110790bce60d64f902e51e1a061e33292985c72bf6cd07960bf09
 
 # Метаданные
 LABEL maintainer="kadannr <kadannr@gmail.com>" \
@@ -22,7 +22,7 @@ LABEL maintainer="kadannr <kadannr@gmail.com>" \
       description="Telegram bot for daily quotes" \
       security.level="high" \
       base.image="python:3.11-alpine" \
-      base.digest="sha256:de4c8c2cbb11a3e7b36a48e32c6f2b6c8d9e3f7a4b5c2d1e8f7a3b6c9d4e2f1a5" \
+      base.digest="sha256:303398d5c9f110790bce60d64f902e51e1a061e33292985c72bf6cd07960bf09" \
       build.date="2026-02-20"
 
 # Переменные окружения
