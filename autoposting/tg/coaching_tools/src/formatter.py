@@ -27,6 +27,8 @@ def format_tool(tool_data: Dict[str, Any]) -> str:
     content = tool_data.get('content', '')
     author = tool_data.get('author', 'Неизвестный автор')
     hashtags = tool_data.get('hashtags', '#коучинговые_инструменты')
+    theme = tool_data.get('theme', '')
+    duration = tool_data.get('duration_minutes', '')
     
     # Очищаем заголовок от эмодзи для поискового запроса
     clean_title = title
@@ -47,7 +49,7 @@ def format_tool(tool_data: Dict[str, Any]) -> str:
     # Собираем строку ссылок
     links = f"🔗 {yandex} • {google} • {youtube} • {rutube}"
     
-    # Собираем пост
-    formatted = f"{title}\n\n{content}\n\n{links}\n\n{hashtags}"
+    # Собираем пост 
+    formatted = f"{title}\n\n{content}\n\n⏱️ {duration} минут | {theme} | Автор: {author}\n{links}\n\n{hashtags}"
     
     return formatted
