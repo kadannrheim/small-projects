@@ -30,24 +30,22 @@ def format_tool(tool_data: Dict[str, Any]) -> str:
     
     # Очищаем заголовок от эмодзи для поискового запроса
     clean_title = title
-    emojis = ['⚖️', '🔍', '📊', '🎯', '📈', '🧠', '🍅', '🤝', '🌱', '🪑', '📋', '🧩', '👁️', '🔗', '🔄', '🧘', '💭', '📝', '🎭', '🔍', '⚡', '🪞', '🧠', '🔨', '✨', '❓', '💡', '❤️', '💪', '🎁', '⏳', '🛡️', '🐸', '🔪', '📚', '🔔', '📥', '🧭', '🦋', '🧩', '🔋', '🪞']
+    emojis = ['⚖️', '🔍', '📊', '🎯', '📈', '🧠', '🍅', '🤝', '🌱', '🪑', '📋', '🧩', '👁️', '🔗', '🔄', '🧘', '💭', '📝', '🎭', '⚡', '🪞', '🔨', '✨', '❓', '💡', '❤️', '💪', '🎁', '⏳', '🛡️', '🐸', '🔪', '📚', '🔔', '📥', '🧭', '🦋', '🔋']
     for emoji in emojis:
         clean_title = clean_title.replace(emoji, '').strip()
     
-    # Формируем поисковые запросы 
+    # Формируем поисковые запросы
     search_query = urllib.parse.quote(f"{clean_title} {author}")
-    wiki_query = urllib.parse.quote(clean_title.replace(' ', '_'))
     video_query = urllib.parse.quote(f"{clean_title} {author} коучинг")
     
     # Генерируем кликабельные ссылки
     yandex = f"<a href='https://yandex.ru/search/?text={search_query}'>Яндекс</a>"
     google = f"<a href='https://www.google.com/search?q={search_query}'>Google</a>"
-    wikipedia = f"<a href='https://ru.wikipedia.org/wiki/{wiki_query}'>Википедия</a>"
     youtube = f"<a href='https://www.youtube.com/results?search_query={video_query}'>YouTube</a>"
     rutube = f"<a href='https://rutube.ru/search/?query={video_query}'>RuTube</a>"
     
-    # Собираем строку ссылок 
-    links = f"🔗 {yandex} • {google} • {wikipedia} • {youtube} • {rutube}"
+    # Собираем строку ссылок
+    links = f"🔗 {yandex} • {google} • {youtube} • {rutube}"
     
     # Собираем пост
     formatted = f"{title}\n\n{content}\n\n{links}\n\n{hashtags}"
