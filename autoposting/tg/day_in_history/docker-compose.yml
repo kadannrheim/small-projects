@@ -1,0 +1,35 @@
+# docker-compose.yml для Day in History Bot
+# =============================================================================
+# Автоматическая публикация исторических постов в Telegram канал
+# =============================================================================
+
+version: '3.8'
+
+services:
+  day-in-history-bot:
+    build: .
+    container_name: day-in-history-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Монтируем директории для сохранения данных между перезапусками
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Если нужно монтировать конкретные файлы (например, для редактирования на лету)
+      # - ./data/day_in_history.json:/app/data/day_in_history.json
+    # Запускаем от непривилегированного пользователя
+    user: "1000:1000"
+    # Ограничение ресурсов (опционально)
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+    # Логирование Docker
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # Максимальный размер одного лог-файла
+        max-file: "3"      # Количество ротированных файлов
