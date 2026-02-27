@@ -5,7 +5,7 @@
 Модуль форматирования постов "День в истории"
 =============================================
 
-Генерирует посты для Telegram.
+Генерирует посты для Telegram с автоматической шапкой.
 """
 
 from typing import Dict, Any
@@ -24,13 +24,12 @@ def format_post(post_data: Dict[str, Any]) -> str:
     # Извлекаем данные
     title = post_data.get('title', 'День в истории')
     content = post_data.get('content', '')
-    lesson = post_data.get('lesson', '')
     hashtags = post_data.get('hashtags', '#деньвистории')
     
-    # Формируем урок, если есть
-    lesson_text = f"\n\n💡 {lesson}" if lesson else ""
+    # Формируем шапку
+    header = "------------------------\n<b>ЭТОТ ДЕНЬ В ИСТОРИИ</b>\n------------------------\n"
     
     # Собираем пост
-    formatted = f"{title}\n\n{content}{lesson_text}\n\n{hashtags}"
+    formatted = f"{header}\n<b>{title}</b>\n\n{content}\n\n{hashtags}"
     
     return formatted
