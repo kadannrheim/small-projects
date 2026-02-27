@@ -26,8 +26,8 @@ def format_post(post_data: Dict[str, Any]) -> str:
     content = post_data.get('content', '')
     hashtags = post_data.get('hashtags', '#деньвистории')
     
-    # Формируем шапку
-    header = "------------------------\n<b>ЭТОТ ДЕНЬ В ИСТОРИИ</b>\n------------------------\n"
+    # Формируем компактную шапку
+    header = "🔹 <b>ЭТОТ ДЕНЬ В ИСТОРИИ</b> 🔹\n"
     
     # Собираем пост
     formatted = f"{header}\n<b>{title}</b>\n\n{content}\n\n{hashtags}"
