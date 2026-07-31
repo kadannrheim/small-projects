@@ -34,6 +34,10 @@ etc_amnezia_wg/
 docker-data/
 *.docker-data/
 
+# Данные MTProto прокси (конкретно для вашего проекта)
+data/
+/data/
+
 # Docker компоуз переопределения
 docker-compose.override.yml
 docker-compose.*.yml
@@ -307,3 +311,38 @@ credentials/
 # PGP ключи
 *.asc
 *.gpg
+
+# ============================================
+# MTProto & SOCKS5 PROXY (ДОБАВЛЕНО)
+# ============================================
+
+# Данные прокси (секреты и ключи)
+proxy-secrets/
+mtproto/
+socks5/
+
+# Файлы с паролями и секретами для прокси
+*secret*
+*password*
+*credential*
+proxy.env
+
+# Временные файлы прокси
+*.proxy-tmp
+*.proxy-lock
+
+# Бэкапы конфигураций прокси
+docker-compose*.backup
+docker-compose*.old
+
+# Логи прокси
+proxy.log
+mtproto-proxy.log
+socks5-proxy.log
+
+# PID файлы прокси
+*.proxy.pid
+
+# Кэш прокси
+proxy-cache/
+.cache/
