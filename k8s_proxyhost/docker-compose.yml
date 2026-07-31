@@ -1,0 +1,46 @@
+services:
+  k8s-bastion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${CONTAINER_NAME:-k8s-proxyhost}
+    hostname: ${CONTAINER_NAME:-k8s-proxyhost}
+    restart: unless-stopped
+    ports:
+      - "${SSH_PORT:-2222}:22"
+    volumes:
+      # Папка с SSH ключами
+      - ./folder_with_sshkey:/config:ro
+      # Монтируем локальный конфиг Kubernetes
+      - ./kubeconfig/config:/root/.kube/config
+      # Сохраняем историю bash
+      - bash_history:/root/.bash_history
+      # Скрипты и манифесты
+      - ./scripts:/root/scripts:ro
+      - ./manifests:/root/manifests:ro
+      # Дополнительные volume для плагинов
+      - krew-store:/root/.krew
+      - k9s-cache:/root/.local/share/k9s
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+      - KUBECONFIG=/root/.kube/config
+      - TERM=xterm-256color
+    networks:
+      - k8s-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 1G
+        reservations:
+          cpus: '0.2'
+          memory: 256M
+
+volumes:
+  bash_history:
+  krew-store:
+  k9s-cache:
+
+networks:
+  k8s-network:
+    driver: bridge
