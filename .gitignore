@@ -13,10 +13,10 @@ keys/
 *.pem
 *.crt
 *.pub
-authorized_keys
+folder_with_sshkey/
 
 # k8s
-config
+kubeconfig/
 
 # Terraform секреты
 *.tfvars
