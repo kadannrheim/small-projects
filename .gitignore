@@ -13,6 +13,10 @@ keys/
 *.pem
 *.crt
 *.pub
+authorized_keys
+
+# k8s
+config
 
 # Terraform секреты
 *.tfvars
