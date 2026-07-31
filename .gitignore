@@ -5,6 +5,9 @@
 # Файлы окружения
 *.env
 .env.local
+.env.*.local
+.env.production
+.env.staging
 
 # Ключи и сертификаты
 secrets/
@@ -22,6 +25,25 @@ kubeconfig/
 *.tfvars
 
 # ============================================
+# DOCKER / CONTAINERS (ДОБАВЛЕНО)
+# ============================================
+
+# Данные контейнеров
+volumes/
+etc_amnezia_wg/
+docker-data/
+*.docker-data/
+
+# Docker компоуз переопределения
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+!docker-compose.prod.yml
+
+# Dockerignore
+.dockerignore
+
+# ============================================
 # ПАКЕТЫ И АРХИВЫ
 # ============================================
 
@@ -34,6 +56,8 @@ kubeconfig/
 *.tar
 *.tgz
 *.7z
+*.zip
+*.gz
 
 # ============================================
 # IDE И РАБОЧИЕ ФАЙЛЫ
@@ -41,14 +65,26 @@ kubeconfig/
 
 # VS Code
 .vscode/
+*.code-workspace
 
 # IntelliJ IDEA
 .idea/
 *.iml
+*.iws
+*.ipr
 
 # Редакторы
 *.swp
 *.swo
+*~
+*.tmp
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.un~
 
 # ============================================
 # ТЕРРАФОРМ
@@ -105,6 +141,9 @@ www-test/
 *.log
 logs/
 crash.log
+*.pid
+*.seed
+*.pid.lock
 
 # Docker данные
 *docker*/data/
@@ -118,6 +157,8 @@ crash.log
 *_old*
 *.bak
 *.backup
+*.old
+*.orig
 
 # Конкретные файлы бэкапов
 bot.py_backup*
@@ -131,6 +172,17 @@ quotes.txt_backup
 build/
 dist/
 *.egg-info/
+*.egg
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
 # ============================================
 # ОПЕРАЦИОННЫЕ СИСТЕМЫ
@@ -144,14 +196,22 @@ dist/
 .Trashes
 ehthumbs.db
 Thumbs.db
+.AppleDouble
+.LSOverride
+Icon
 
 # Windows
 Desktop.ini
 $RECYCLE.BIN/
 *.lnk
+thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Linux
 *~
+.directory
+*.swp
 
 # ============================================
 # ТЕСТЫ
@@ -162,7 +222,23 @@ $RECYCLE.BIN/
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
 test-reports/
+.coverage.*
+coverage.xml
+*.cover
+
+# ============================================
+# GIT
+# ============================================
+
+.git/
+.gitattributes
+.gitmodules
 
 # ============================================
 # СПЕЦИФИЧНЫЕ ФАЙЛЫ
@@ -174,3 +250,60 @@ telegram-quotes.env
 news-poster.env
 quotes365.json
 published_history.json
+
+# ============================================
+# AMNEZIA WG EASY (ДОБАВЛЕНО)
+# ============================================
+
+# Данные WireGuard
+wg0.conf
+*.conf.bak
+privatekey
+publickey
+*.pem
+*.der
+
+# Конфигурации клиентов
+clients/
+client-*.conf
+*.conf
+
+# Сертификаты
+certs/
+*.crt
+*.csr
+*.key
+
+# Резервные копии конфигураций
+*.conf.old
+*.conf.backup
+
+# Временные файлы WireGuard
+*.tmp
+*.lock
+
+# Данные пользователей
+users/
+*.user
+
+# ============================================
+# SECURITY & CREDENTIALS (ДОБАВЛЕНО)
+# ============================================
+
+# SSH ключи
+.ssh/
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# Пароли и токены
+*.secret
+*.token
+*.password
+credentials/
+*.cred
+
+# PGP ключи
+*.asc
+*.gpg
