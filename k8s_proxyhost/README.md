@@ -1,4 +1,4 @@
-# 🚀 Kubernetes Jumphost with GitLab CI/CD
+# 🚀 Kubernetes proxyhost with GitLab CI/CD
 
 Докер-контейнер для управления Kubernetes кластером и выполнения CI/CD задач с GitLab Runner.
 

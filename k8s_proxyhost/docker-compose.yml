@@ -3,43 +3,50 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - GITLAB_URL=${GITLAB_URL:-https://gitlab.com}
     container_name: ${CONTAINER_NAME:-k8s-proxyhost}
     hostname: ${CONTAINER_NAME:-k8s-proxyhost}
     restart: unless-stopped
     ports:
       - "${SSH_PORT:-2222}:22"
     volumes:
-      # Папка с SSH ключами
-      - ./folder_with_sshkey:/config:ro
-      # Монтируем локальный конфиг Kubernetes
-      - ./kubeconfig/config:/root/.kube/config
-      # Сохраняем историю bash
+      # SSH ключи
+      - ${SSH_KEYS_PATH:-./folder_with_sshkey}:/config:ro
+      # Kubernetes конфиг
+      - ${KUBECONFIG_PATH:-./kubeconfig/config}:/root/.kube/config
+      # История bash
       - bash_history:/root/.bash_history
       # Скрипты и манифесты
       - ./scripts:/root/scripts:ro
       - ./manifests:/root/manifests:ro
-      # Дополнительные volume для плагинов
-      - krew-store:/root/.krew
-      - k9s-cache:/root/.local/share/k9s
+      # GitLab Runner конфиг (persistent)
+      - gitlab-runner-config:/etc/gitlab-runner
+      # Docker (опционально, только если USE_HOST_DOCKER=true)
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
     environment:
       - TZ=${TIMEZONE:-UTC}
       - KUBECONFIG=/root/.kube/config
       - TERM=xterm-256color
+      - GITLAB_URL=${GITLAB_URL:-https://gitlab.com}
+      - GITLAB_RUNNER_TOKEN_SHELL=${GITLAB_RUNNER_TOKEN_SHELL:-}
+      - GITLAB_RUNNER_TOKEN_DOCKER=${GITLAB_RUNNER_TOKEN_DOCKER:-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
     networks:
       - k8s-network
     deploy:
       resources:
         limits:
-          cpus: '0.8'
-          memory: 1G
+          cpus: '${CPU_LIMIT:-0.8}'
+          memory: ${MEMORY_LIMIT:-1G}
         reservations:
-          cpus: '0.2'
-          memory: 256M
+          cpus: '${CPU_RESERVATION:-0.2}'
+          memory: ${MEMORY_RESERVATION:-256M}
+    privileged: ${USE_HOST_DOCKER:-true}
 
 volumes:
   bash_history:
-  krew-store:
-  k9s-cache:
+  gitlab-runner-config:
 
 networks:
   k8s-network:
