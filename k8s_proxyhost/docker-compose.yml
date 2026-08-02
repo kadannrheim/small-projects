@@ -4,44 +4,56 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - GITLAB_URL=${GITLAB_URL:-https://gitlab.com}
+        # Pin / toggle heavy optional tools (faster, lighter rebuilds)
+        INSTALL_K9S: ${INSTALL_K9S:-true}
+        INSTALL_HELM: ${INSTALL_HELM:-true}
+        KUBECTL_VERSION: ${KUBECTL_VERSION:-v1.30.4}
+        HELM_VERSION: ${HELM_VERSION:-v3.15.4}
+        K9S_VERSION: ${K9S_VERSION:-v0.32.5}
+        GITLAB_RUNNER_VERSION: ${GITLAB_RUNNER_VERSION:-v17.3.1}
     container_name: ${CONTAINER_NAME:-k8s-proxyhost}
     hostname: ${CONTAINER_NAME:-k8s-proxyhost}
     restart: unless-stopped
     ports:
       - "${SSH_PORT:-2222}:22"
     volumes:
-      # SSH ключи
+      # SSH public keys → /config/authorized_keys
       - ${SSH_KEYS_PATH:-./folder_with_sshkey}:/config:ro
-      # Kubernetes конфиг
-      - ${KUBECONFIG_PATH:-./kubeconfig/config}:/root/.kube/config
-      # История bash
-      - bash_history:/root/.bash_history
-      # Скрипты и манифесты
-      - ./scripts:/root/scripts:ro
-      - ./manifests:/root/manifests:ro
-      # GitLab Runner конфиг (persistent)
+      # Kubernetes kubeconfig file
+      - ${KUBECONFIG_PATH:-./kubeconfig/config}:/root/.kube/config:ro
+      # Optional workdirs (exist in repo as empty dirs)
+      - ${SCRIPTS_PATH:-./scripts}:/root/scripts
+      - ${MANIFESTS_PATH:-./manifests}:/root/manifests
+      # Persist runner registration (delete volume to force re-register)
       - gitlab-runner-config:/etc/gitlab-runner
     environment:
-      - TZ=${TIMEZONE:-UTC}
-      - KUBECONFIG=/root/.kube/config
-      - TERM=xterm-256color
-      - GITLAB_URL=${GITLAB_URL:-https://gitlab.com}
-      - GITLAB_RUNNER_TOKEN_SHELL=${GITLAB_RUNNER_TOKEN_SHELL:-}
-      - GITLAB_RUNNER_TOKEN_DOCKER=${GITLAB_RUNNER_TOKEN_DOCKER:-}
+      TZ: ${TIMEZONE:-UTC}
+      KUBECONFIG: /root/.kube/config
+      TERM: xterm-256color
+      GITLAB_URL: ${GITLAB_URL:-https://gitlab.com}
+      GITLAB_RUNNER_TOKEN_SHELL: ${GITLAB_RUNNER_TOKEN_SHELL:-}
+      GITLAB_RUNNER_NAME: ${GITLAB_RUNNER_NAME:-shell-on-k8s-proxyhost}
+      GITLAB_RUNNER_TAGS: ${GITLAB_RUNNER_TAGS:-shell,linux}
+      GITLAB_RUNNER_RUN_UNTAGGED: ${GITLAB_RUNNER_RUN_UNTAGGED:-true}
+      GITLAB_RUNNER_LOCKED: ${GITLAB_RUNNER_LOCKED:-false}
+      FORCE_REREGISTER: ${FORCE_REREGISTER:-false}
+      SSH_PORT: ${SSH_PORT:-2222}
+      # Present only to warn in logs if still set — docker executor not supported
+      GITLAB_RUNNER_TOKEN_DOCKER: ${GITLAB_RUNNER_TOKEN_DOCKER:-}
+    # Non-swarm resource limits (Compose applies these directly)
+    cpus: ${CPU_LIMIT:-0.5}
+    mem_limit: ${MEMORY_LIMIT:-512m}
+    mem_reservation: ${MEMORY_RESERVATION:-128m}
     networks:
       - k8s-network
-    deploy:
-      resources:
-        limits:
-          cpus: '${CPU_LIMIT:-0.8}'
-          memory: ${MEMORY_LIMIT:-1G}
-        reservations:
-          cpus: '${CPU_RESERVATION:-0.2}'
-          memory: ${MEMORY_RESERVATION:-256M}
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -x sshd >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
 volumes:
-  bash_history:
   gitlab-runner-config:
 
 networks:

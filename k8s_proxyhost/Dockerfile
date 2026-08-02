@@ -1,94 +1,80 @@
 FROM ubuntu:22.04
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=UTC
-ENV KUBECONFIG=/root/.kube/config
+ARG KUBECTL_VERSION=v1.30.4
+ARG HELM_VERSION=v3.15.4
+ARG K9S_VERSION=v0.32.5
+ARG GITLAB_RUNNER_VERSION=v17.3.1
+ARG INSTALL_K9S=true
+ARG INSTALL_HELM=true
 
-# Настройка времени
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC \
+    KUBECONFIG=/root/.kube/config \
+    GITLAB_RUNNER_CONFIG=/etc/gitlab-runner/config.toml
 
-# ============================================
-# МИНИМАЛЬНЫЙ НАБОР (только необходимое)
-# ============================================
-RUN apt-get update && apt-get install -y \
-    openssh-server \
-    curl \
-    wget \
-    git \
-    vim \
-    nano \
-    bash-completion \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Minimal packages only (no password auth secrets baked into the image)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        openssh-server \
+        curl \
+        ca-certificates \
+        git \
+        bash-completion \
+        jq \
+        procps \
+        tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /var/run/sshd /root/.ssh /root/.kube /etc/gitlab-runner \
+    && chmod 700 /root/.ssh \
+    && ssh-keygen -A
 
-# ============================================
-# kubectl
-# ============================================
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-    && chmod +x kubectl \
-    && mv kubectl /usr/local/bin/
+# kubectl (pinned)
+RUN curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kubectl
 
-# ============================================
-# k9s (опционально, для удобства)
-# ============================================
-RUN curl -LO https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_amd64.tar.gz \
-    && tar -xvf k9s_Linux_amd64.tar.gz \
-    && chmod +x k9s \
-    && mv k9s /usr/local/bin/ \
-    && rm k9s_Linux_amd64.tar.gz
+# helm (pinned, optional)
+RUN if [ "$INSTALL_HELM" = "true" ]; then \
+      curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o /tmp/helm.tgz \
+      && tar -xzf /tmp/helm.tgz -C /tmp \
+      && mv /tmp/linux-amd64/helm /usr/local/bin/helm \
+      && rm -rf /tmp/helm.tgz /tmp/linux-amd64; \
+    fi
 
-# ============================================
-# HELM (опционально)
-# ============================================
-RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
-    && chmod 700 get_helm.sh \
-    && ./get_helm.sh \
-    && rm get_helm.sh
+# k9s (pinned, optional — largest optional binary)
+RUN if [ "$INSTALL_K9S" = "true" ]; then \
+      curl -fsSL "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz" -o /tmp/k9s.tgz \
+      && tar -xzf /tmp/k9s.tgz -C /tmp k9s \
+      && mv /tmp/k9s /usr/local/bin/k9s \
+      && rm -f /tmp/k9s.tgz; \
+    fi
 
-# ============================================
-# GITLAB RUNNER (только shell executor!)
-# ============================================
-# Самый легкий способ - прямой бинарник
-RUN curl -L "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64" -o /usr/local/bin/gitlab-runner \
-    && chmod +x /usr/local/bin/gitlab-runner
+# GitLab Runner (pinned binary — shell executor only in image)
+RUN curl -fsSL "https://gitlab-runner-downloads.s3.amazonaws.com/${GITLAB_RUNNER_VERSION}/binaries/gitlab-runner-linux-amd64" \
+      -o /usr/local/bin/gitlab-runner \
+    && chmod +x /usr/local/bin/gitlab-runner \
+    && useradd --system --create-home --shell /bin/bash gitlab-runner \
+    && mkdir -p /home/gitlab-runner \
+    && chown -R gitlab-runner:gitlab-runner /home/gitlab-runner
 
-# Создаем пользователя для runner
-RUN useradd -r -s /bin/bash gitlab-runner \
-    && mkdir -p /home/gitlab-runner/.gitlab-runner \
-    && chown -R gitlab-runner:gitlab-runner /home/gitlab-runner \
-    && mkdir -p /etc/gitlab-runner
-
-# ============================================
-# НАСТРОЙКА SSH
-# ============================================
-RUN mkdir /var/run/sshd \
-    && echo 'root:root' | chpasswd \
-    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
-    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config \
-    && mkdir -p /root/.ssh \
-    && chmod 700 /root/.ssh
-
-# ============================================
-# АЛИАСЫ
-# ============================================
-RUN echo "source <(kubectl completion bash)" >> ~/.bashrc \
-    && echo "alias k='kubectl'" >> ~/.bashrc \
-    && echo "alias kg='kubectl get'" >> ~/.bashrc \
-    && echo "alias kgp='kubectl get pods'" >> ~/.bashrc \
-    && echo "alias kgd='kubectl get deployments'" >> ~/.bashrc \
-    && echo "alias kgs='kubectl get services'" >> ~/.bashrc \
-    && echo "alias kgn='kubectl get nodes'" >> ~/.bashrc \
-    && echo "alias kd='kubectl describe'" >> ~/.bashrc \
-    && echo "alias kl='kubectl logs'" >> ~/.bashrc \
-    && echo "alias ke='kubectl exec -it'" >> ~/.bashrc \
-    && echo "alias ka='kubectl apply -f'" >> ~/.bashrc \
-    && echo "export KUBE_EDITOR=vim" >> ~/.bashrc
-
-RUN mkdir -p /root/.kube
+# kubectl aliases (no network calls at build time)
+RUN printf '%s\n' \
+      'source <(kubectl completion bash 2>/dev/null || true)' \
+      "alias k='kubectl'" \
+      "alias kg='kubectl get'" \
+      "alias kgp='kubectl get pods'" \
+      "alias kgd='kubectl get deployments'" \
+      "alias kgs='kubectl get services'" \
+      "alias kgn='kubectl get nodes'" \
+      "alias kd='kubectl describe'" \
+      "alias kl='kubectl logs'" \
+      "alias ke='kubectl exec -it'" \
+      "alias ka='kubectl apply -f'" \
+      'export KUBE_EDITOR=vi' \
+      >> /root/.bashrc
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 22
 
-ENTRYPOINT ["/entrypoint.sh"]
+# tini reaps zombies and avoids orphaned busy-loops from background runners
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]

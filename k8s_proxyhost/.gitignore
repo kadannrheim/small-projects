@@ -1,0 +1,15 @@
+# Secrets & local config
+.env
+.env.local
+.env.*.local
+
+# Mounted secrets / cluster access
+kubeconfig/
+folder_with_sshkey/
+*.token
+config.toml
+
+# Local clutter
+volumes/
+*.log
+.DS_Store
