@@ -22,8 +22,6 @@ services:
       - ./manifests:/root/manifests:ro
       # GitLab Runner конфиг (persistent)
       - gitlab-runner-config:/etc/gitlab-runner
-      # Docker (опционально, только если USE_HOST_DOCKER=true)
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
     environment:
       - TZ=${TIMEZONE:-UTC}
       - KUBECONFIG=/root/.kube/config
@@ -31,7 +29,6 @@ services:
       - GITLAB_URL=${GITLAB_URL:-https://gitlab.com}
       - GITLAB_RUNNER_TOKEN_SHELL=${GITLAB_RUNNER_TOKEN_SHELL:-}
       - GITLAB_RUNNER_TOKEN_DOCKER=${GITLAB_RUNNER_TOKEN_DOCKER:-}
-      - DOCKER_HOST=unix:///var/run/docker.sock
     networks:
       - k8s-network
     deploy:
@@ -42,7 +39,6 @@ services:
         reservations:
           cpus: '${CPU_RESERVATION:-0.2}'
           memory: ${MEMORY_RESERVATION:-256M}
-    privileged: ${USE_HOST_DOCKER:-true}
 
 volumes:
   bash_history:

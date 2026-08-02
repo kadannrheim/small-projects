@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-# Аргументы для сборки (передаются из .env)
+# Аргументы для сборки
 ARG GITLAB_URL=https://gitlab.com
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,7 +12,7 @@ ENV GITLAB_URL=${GITLAB_URL}
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # ============================================
-# БАЗОВЫЕ УТИЛИТЫ
+# БАЗОВЫЕ УТИЛИТЫ (минимальный набор)
 # ============================================
 RUN apt-get update && apt-get install -y \
     openssh-server \
@@ -28,16 +28,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     gnupg \
     apt-transport-https \
-    software-properties-common \
-    && rm -rf /var/lib/apt/lists/*
-
-# ============================================
-# УСТАНОВКА DOCKER
-# ============================================
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
@@ -56,7 +46,7 @@ RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/s
     && rm get_helm.sh
 
 # ============================================
-# УСТАНОВКА k9s
+# УСТАНОВКА k9s (оставляем!)
 # ============================================
 RUN curl -LO https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_amd64.tar.gz \
     && tar -xvf k9s_Linux_amd64.tar.gz \
@@ -65,13 +55,13 @@ RUN curl -LO https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_
     && rm k9s_Linux_amd64.tar.gz
 
 # ============================================
-# УСТАНОВКА yq
+# УСТАНОВКА yq (для работы с YAML)
 # ============================================
 RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
     && chmod +x /usr/local/bin/yq
 
 # ============================================
-# УСТАНОВКА GITLAB RUNNER
+# УСТАНОВКА GITLAB RUNNER (shell executor)
 # ============================================
 RUN curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | bash \
     && apt-get install -y gitlab-runner \
@@ -90,8 +80,7 @@ RUN mkdir /var/run/sshd \
 # ============================================
 # НАСТРОЙКА GITLAB RUNNER
 # ============================================
-RUN mkdir -p /etc/gitlab-runner \
-    && usermod -aG docker gitlab-runner
+RUN mkdir -p /etc/gitlab-runner
 
 # ============================================
 # АЛИАСЫ И АВТОДОПОЛНЕНИЕ
@@ -104,14 +93,28 @@ RUN echo "source <(kubectl completion bash)" >> ~/.bashrc \
     && echo "alias kgd='kubectl get deployments'" >> ~/.bashrc \
     && echo "alias kgs='kubectl get services'" >> ~/.bashrc \
     && echo "alias kgn='kubectl get nodes'" >> ~/.bashrc \
+    && echo "alias kgi='kubectl get ingress'" >> ~/.bashrc \
+    && echo "alias kgns='kubectl get namespaces'" >> ~/.bashrc \
     && echo "alias kd='kubectl describe'" >> ~/.bashrc \
+    && echo "alias kdp='kubectl describe pods'" >> ~/.bashrc \
+    && echo "alias kdd='kubectl describe deployments'" >> ~/.bashrc \
+    && echo "alias kds='kubectl describe services'" >> ~/.bashrc \
     && echo "alias kl='kubectl logs'" >> ~/.bashrc \
     && echo "alias klf='kubectl logs -f'" >> ~/.bashrc \
     && echo "alias ke='kubectl exec -it'" >> ~/.bashrc \
     && echo "alias ka='kubectl apply -f'" >> ~/.bashrc \
     && echo "alias kdel='kubectl delete'" >> ~/.bashrc \
+    && echo "alias kedit='kubectl edit'" >> ~/.bashrc \
+    && echo "alias ktop='kubectl top pods'" >> ~/.bashrc \
     && echo "alias kctx='kubectl config current-context'" >> ~/.bashrc \
+    && echo "alias kc='kubectl config use-context'" >> ~/.bashrc \
+    && echo "alias kns='kubectl config set-context --current --namespace'" >> ~/.bashrc \
     && echo "alias h='helm'" >> ~/.bashrc \
+    && echo "alias hl='helm list'" >> ~/.bashrc \
+    && echo "alias hs='helm status'" >> ~/.bashrc \
+    && echo "alias hi='helm install'" >> ~/.bashrc \
+    && echo "alias hu='helm upgrade'" >> ~/.bashrc \
+    && echo "alias hd='helm delete'" >> ~/.bashrc \
     && echo "export KUBE_EDITOR=vim" >> ~/.bashrc
 
 # Создание директории для конфигов
