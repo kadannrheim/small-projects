@@ -33,9 +33,7 @@ services:
       GITLAB_URL: ${GITLAB_URL:-https://gitlab.com}
       GITLAB_RUNNER_TOKEN_SHELL: ${GITLAB_RUNNER_TOKEN_SHELL:-}
       GITLAB_RUNNER_NAME: ${GITLAB_RUNNER_NAME:-shell-on-k8s-proxyhost}
-      GITLAB_RUNNER_TAGS: ${GITLAB_RUNNER_TAGS:-shell,linux}
-      GITLAB_RUNNER_RUN_UNTAGGED: ${GITLAB_RUNNER_RUN_UNTAGGED:-true}
-      GITLAB_RUNNER_LOCKED: ${GITLAB_RUNNER_LOCKED:-false}
+      # Tags/locked/run-untagged: set in GitLab UI when creating the runner (glrt- register rejects CLI flags)
       FORCE_REREGISTER: ${FORCE_REREGISTER:-false}
       SSH_PORT: ${SSH_PORT:-2222}
       # Present only to warn in logs if still set — docker executor not supported

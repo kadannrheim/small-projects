@@ -48,20 +48,33 @@ register_shell_runner() {
   echo "Registering GitLab Runner (shell executor)..."
   echo "  URL:   $GITLAB_URL"
   echo "  Name:  $RUNNER_NAME"
+  echo "  Token: ${token:0:5}… (len=${#token})"
 
-  # Authentication token (glrt-*) — tags/description are primarily set in GitLab UI.
+  # glrt-* authentication tokens: tags / locked / run-untagged are set in GitLab UI.
+  # Passing --tag-list / --run-untagged / --locked makes register FAIL with:
+  #   "Runner configuration other than name and executor configuration is reserved"
+  # Legacy registration tokens (non-glrt) still accept those flags; we only support glrt- here.
+  if [[ "$token" != glrt-* ]]; then
+    echo "[error] Expected a runner authentication token (glrt-...), got a different prefix."
+    echo "        In GitLab UI: Create runner → Shell → copy the authentication token."
+    return 1
+  fi
+
+  # Unset legacy REGISTER_* vars so they cannot inject reserved options.
+  unset REGISTER_LOCKED REGISTER_RUN_UNTAGGED REGISTER_TAG_LIST \
+        REGISTER_ACCESS_LEVEL REGISTER_MAXIMUM_TIMEOUT REGISTER_PAUSED \
+        REGISTER_MAINTENANCE_NOTE 2>/dev/null || true
+
   if ! gitlab-runner register \
       --non-interactive \
+      --config "$CONFIG_FILE" \
       --url "$GITLAB_URL" \
       --token "$token" \
       --executor "shell" \
-      --description "$RUNNER_NAME" \
-      --name "$RUNNER_NAME" \
-      --tag-list "${GITLAB_RUNNER_TAGS:-shell,linux}" \
-      --run-untagged="${GITLAB_RUNNER_RUN_UNTAGGED:-true}" \
-      --locked="${GITLAB_RUNNER_LOCKED:-false}"; then
+      --description "$RUNNER_NAME"; then
     echo "[error] gitlab-runner register failed — check GITLAB_URL and GITLAB_RUNNER_TOKEN_SHELL"
     echo "        Delete stale 'Never contacted' runners in GitLab UI and create a fresh shell runner token."
+    echo "        Authentication tokens are single-use: if this token was already consumed, create a new runner."
     return 1
   fi
 
@@ -82,6 +95,8 @@ register_shell_runner() {
 # --------------------------------------------
 # GitLab Runner
 # --------------------------------------------
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
 if [ "${FORCE_REREGISTER:-false}" = "true" ] && [ -f "$CONFIG_FILE" ]; then
   echo "[warn] FORCE_REREGISTER=true — removing old $CONFIG_FILE"
   rm -f "$CONFIG_FILE"
@@ -92,7 +107,9 @@ TOKEN_SHELL="${GITLAB_RUNNER_TOKEN_SHELL:-}"
 if config_has_runners; then
   echo "[ok] Existing runner config found — skipping register"
 elif [ -n "$TOKEN_SHELL" ]; then
-  register_shell_runner "$TOKEN_SHELL" || true
+  if ! register_shell_runner "$TOKEN_SHELL"; then
+    echo "[error] Registration failed — starting SSH only (no gitlab-runner process)"
+  fi
 else
   echo "[warn] GITLAB_RUNNER_TOKEN_SHELL is empty — runner will NOT register or contact GitLab"
   echo "       Set it in .env to a fresh shell-executor runner token (glrt-...)."
@@ -100,7 +117,7 @@ fi
 
 if [ -n "${GITLAB_RUNNER_TOKEN_DOCKER:-}" ]; then
   echo "[warn] GITLAB_RUNNER_TOKEN_DOCKER is set but docker executor is not enabled in this image."
-  echo "       Use a shell runner token only, or delete the unused docker runner in GitLab UI."
+  echo "       Delete the unused docker runner in GitLab UI; keep only a Shell runner token."
 fi
 
 # --------------------------------------------

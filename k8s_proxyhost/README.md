@@ -73,7 +73,14 @@ docker exec k8s-proxyhost gitlab-runner list
 
 ## Устранение проблем
 
-**Runner Never contacted** — пустой/старый токен, неверный `GITLAB_URL`, или битый volume `gitlab-runner-config`. Удалите runner в GitLab, создайте новый Shell token, `FORCE_REREGISTER=true`, перезапустите.
+**Runner Never contacted / `verify` без runners** — чаще всего:
+1. Регистрация с `glrt-` падала из‑за флагов `--tag-list` / `--locked` (исправлено в `entrypoint.sh`)
+2. Пустой/старый токен, неверный `GITLAB_URL`, или битый volume
+3. В `.env` всё ещё задан `GITLAB_RUNNER_TOKEN_DOCKER` — удалите docker-runner в UI и очистите переменную
+
+Удалите runners **Never contacted** в GitLab → создайте новый **Shell** runner → свежий `glrt-...` в `.env` → `FORCE_REREGISTER=true` → `docker compose up -d --build` → снова `FORCE_REREGISTER=false`.
+
+Успех в логах: `[ok] Runner registered` и `[ok] sshd started; starting gitlab-runner...`.
 
 **SSH denied** — проверьте `folder_with_sshkey/authorized_keys` и порт `SSH_PORT`.
 
