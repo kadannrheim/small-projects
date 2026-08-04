@@ -1,0 +1,22 @@
+services:
+  mtproto-proxy:
+    image: telegrammessenger/proxy
+    container_name: mtproto-proxy
+    restart: unless-stopped
+    ports:
+      - "2055:443"
+    volumes:
+      - ./data:/data
+    environment:
+      - SECRET=${SECRET}
+      - IP=${IP}
+  
+  socks5:
+    image: serjs/go-socks5-proxy
+    container_name: socks5-proxy
+    restart: unless-stopped
+    ports:
+      - "1080:1080"
+    environment:
+      - PROXY_USER=${PROXY_USER}
+      - PROXY_PASSWORD=${PROXY_PASSWORD}
