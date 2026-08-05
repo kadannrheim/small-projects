@@ -1,4 +1,5 @@
 #!/bin/bash
+# Точка входа контейнера: SSH + регистрация/запуск GitLab Runner (shell)
 set -euo pipefail
 
 echo "=== Starting K8s Proxyhost ==="
@@ -9,7 +10,7 @@ RUNNER_NAME="${GITLAB_RUNNER_NAME:-shell-on-k8s-proxyhost}"
 SSH_PORT_HINT="${SSH_PORT:-2222}"
 
 # --------------------------------------------
-# SSH (key-only — no hardcoded passwords)
+# SSH: только ключи, без паролей в образе
 # --------------------------------------------
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
@@ -19,9 +20,10 @@ if [ -f /config/authorized_keys ]; then
   chmod 600 /root/.ssh/authorized_keys
   echo "[ok] SSH authorized_keys loaded"
 else
-  echo "[warn] /config/authorized_keys not found — SSH key login will fail until you mount it"
+  echo "[warn] /config/authorized_keys не найден — вход по SSH не сработает, пока не смонтируете ключи"
 fi
 
+# Host keys для sshd (если ещё не сгенерированы)
 ssh-keygen -A >/dev/null 2>&1 || true
 
 cat > /etc/ssh/sshd_config << 'SSHCONF'
@@ -37,12 +39,15 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 SSHCONF
 
 # --------------------------------------------
-# Helpers
+# Вспомогательные функции
 # --------------------------------------------
+
+# Есть ли уже зарегистрированный runner в config.toml
 config_has_runners() {
   [ -f "$CONFIG_FILE" ] && grep -q '\[\[runners\]\]' "$CONFIG_FILE" 2>/dev/null
 }
 
+# Регистрация shell-runner по authentication token (glrt-...)
 register_shell_runner() {
   local token="$1"
   echo "Registering GitLab Runner (shell executor)..."
@@ -50,17 +55,16 @@ register_shell_runner() {
   echo "  Name:  $RUNNER_NAME"
   echo "  Token: ${token:0:5}… (len=${#token})"
 
-  # glrt-* authentication tokens: tags / locked / run-untagged are set in GitLab UI.
-  # Passing --tag-list / --run-untagged / --locked makes register FAIL with:
+  # Для токенов glrt-* теги / locked / run-untagged задаются ТОЛЬКО в UI GitLab.
+  # Флаги --tag-list / --run-untagged / --locked ломают register с ошибкой:
   #   "Runner configuration other than name and executor configuration is reserved"
-  # Legacy registration tokens (non-glrt) still accept those flags; we only support glrt- here.
   if [[ "$token" != glrt-* ]]; then
-    echo "[error] Expected a runner authentication token (glrt-...), got a different prefix."
-    echo "        In GitLab UI: Create runner → Shell → copy the authentication token."
+    echo "[error] Нужен authentication token (glrt-...), получен другой префикс."
+    echo "        GitLab UI: Create runner → Shell → скопируйте authentication token."
     return 1
   fi
 
-  # Unset legacy REGISTER_* vars so they cannot inject reserved options.
+  # Сбрасываем устаревшие REGISTER_*, чтобы они не подмешали запрещённые опции
   unset REGISTER_LOCKED REGISTER_RUN_UNTAGGED REGISTER_TAG_LIST \
         REGISTER_ACCESS_LEVEL REGISTER_MAXIMUM_TIMEOUT REGISTER_PAUSED \
         REGISTER_MAINTENANCE_NOTE 2>/dev/null || true
@@ -72,18 +76,18 @@ register_shell_runner() {
       --token "$token" \
       --executor "shell" \
       --description "$RUNNER_NAME"; then
-    echo "[error] gitlab-runner register failed — check GITLAB_URL and GITLAB_RUNNER_TOKEN_SHELL"
-    echo "        Delete stale 'Never contacted' runners in GitLab UI and create a fresh shell runner token."
-    echo "        Authentication tokens are single-use: if this token was already consumed, create a new runner."
+    echo "[error] gitlab-runner register не удался — проверьте GITLAB_URL и GITLAB_RUNNER_TOKEN_SHELL"
+    echo "        Удалите «Never contacted» runners в UI и создайте свежий shell-токен."
+    echo "        Токены одноразовые: если уже использовали — нужен новый runner."
     return 1
   fi
 
   if ! config_has_runners; then
-    echo "[error] Registration finished but $CONFIG_FILE has no [[runners]] section"
+    echo "[error] Регистрация завершилась, но в $CONFIG_FILE нет секции [[runners]]"
     return 1
   fi
 
-  # Keep runner light: one job at a time, sane poll interval
+  # Облегчаем runner: один job за раз, разумный интервал опроса
   sed -i 's/^concurrent = .*/concurrent = 1/' "$CONFIG_FILE" 2>/dev/null || true
   if ! grep -q '^check_interval' "$CONFIG_FILE"; then
     sed -i '1a check_interval = 3' "$CONFIG_FILE" 2>/dev/null || true
@@ -93,35 +97,36 @@ register_shell_runner() {
 }
 
 # --------------------------------------------
-# GitLab Runner
+# GitLab Runner: регистрация или использование существующего конфига
 # --------------------------------------------
 mkdir -p "$(dirname "$CONFIG_FILE")"
 
+# FORCE_REREGISTER=true в .env — один раз сбросить volume-конфиг и зарегистрироваться заново
 if [ "${FORCE_REREGISTER:-false}" = "true" ] && [ -f "$CONFIG_FILE" ]; then
-  echo "[warn] FORCE_REREGISTER=true — removing old $CONFIG_FILE"
+  echo "[warn] FORCE_REREGISTER=true — удаляю старый $CONFIG_FILE"
   rm -f "$CONFIG_FILE"
 fi
 
 TOKEN_SHELL="${GITLAB_RUNNER_TOKEN_SHELL:-}"
 
 if config_has_runners; then
-  echo "[ok] Existing runner config found — skipping register"
+  echo "[ok] Найден существующий конфиг runner — пропускаю register"
 elif [ -n "$TOKEN_SHELL" ]; then
   if ! register_shell_runner "$TOKEN_SHELL"; then
-    echo "[error] Registration failed — starting SSH only (no gitlab-runner process)"
+    echo "[error] Регистрация не удалась — поднимаю только SSH (без gitlab-runner)"
   fi
 else
-  echo "[warn] GITLAB_RUNNER_TOKEN_SHELL is empty — runner will NOT register or contact GitLab"
-  echo "       Set it in .env to a fresh shell-executor runner token (glrt-...)."
+  echo "[warn] GITLAB_RUNNER_TOKEN_SHELL пуст — runner НЕ зарегистрируется и не свяжется с GitLab"
+  echo "       Укажите в .env свежий shell-токен (glrt-...)."
 fi
 
 if [ -n "${GITLAB_RUNNER_TOKEN_DOCKER:-}" ]; then
-  echo "[warn] GITLAB_RUNNER_TOKEN_DOCKER is set but docker executor is not enabled in this image."
-  echo "       Delete the unused docker runner in GitLab UI; keep only a Shell runner token."
+  echo "[warn] GITLAB_RUNNER_TOKEN_DOCKER задан, но docker executor в этом образе не поддерживается."
+  echo "       Удалите docker-runner в UI GitLab; оставьте только Shell-токен."
 fi
 
 # --------------------------------------------
-# Start processes (no busy-restart loops)
+# Запуск процессов (без busy-loop в фоне)
 # --------------------------------------------
 echo ""
 echo "Tools (client-only, no API calls):"
@@ -131,14 +136,14 @@ command -v k9s >/dev/null 2>&1 && echo "  k9s:     present"
 echo "  runner:  $(gitlab-runner --version 2>/dev/null | head -1)"
 
 echo ""
-echo "SSH: root@localhost -p ${SSH_PORT_HINT} (key auth only)"
+echo "SSH: root@localhost -p ${SSH_PORT_HINT} (только ключ)"
 
 if config_has_runners; then
-  # Daemonize sshd, keep gitlab-runner in foreground (tini = PID 1)
+  # sshd в фоне, gitlab-runner — главный процесс (tini = PID 1)
   /usr/sbin/sshd
   echo "[ok] sshd started; starting gitlab-runner..."
   exec gitlab-runner run --config "$CONFIG_FILE" --working-directory /home/gitlab-runner
 fi
 
-echo "[warn] No runner config — container stays up with sshd only"
+echo "[warn] Нет конфига runner — контейнер работает только с sshd"
 exec /usr/sbin/sshd -D
