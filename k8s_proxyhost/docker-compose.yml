@@ -1,10 +1,11 @@
+# Запуск jump/proxy host: SSH-доступ + kubectl + GitLab Runner (shell)
 services:
   k8s-bastion:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        # Pin / toggle heavy optional tools (faster, lighter rebuilds)
+        # Пин версий и вкл/выкл тяжёлых инструментов (быстрее и легче пересборка)
         INSTALL_K9S: ${INSTALL_K9S:-true}
         INSTALL_HELM: ${INSTALL_HELM:-true}
         KUBECTL_VERSION: ${KUBECTL_VERSION:-v1.30.4}
@@ -15,16 +16,18 @@ services:
     hostname: ${CONTAINER_NAME:-k8s-proxyhost}
     restart: unless-stopped
     ports:
+      # Хост:контейнер — SSH снаружи на SSH_PORT (по умолчанию 2222)
       - "${SSH_PORT:-2222}:22"
     volumes:
-      # SSH public keys → /config/authorized_keys
+      # Публичные SSH-ключи → файл /config/authorized_keys
       - ${SSH_KEYS_PATH:-./folder_with_sshkey}:/config:ro
-      # Kubernetes kubeconfig file
+      # kubeconfig (файл, не каталог), только чтение
       - ${KUBECONFIG_PATH:-./kubeconfig/config}:/root/.kube/config:ro
-      # Optional workdirs (exist in repo as empty dirs)
+      # Рабочие каталоги для скриптов и манифестов
       - ${SCRIPTS_PATH:-./scripts}:/root/scripts
       - ${MANIFESTS_PATH:-./manifests}:/root/manifests
-      # Persist runner registration (delete volume to force re-register)
+      # Сохраняет регистрацию runner между перезапусками
+      # Чтобы перерегистрировать: FORCE_REREGISTER=true или удалить этот volume
       - gitlab-runner-config:/etc/gitlab-runner
     environment:
       TZ: ${TIMEZONE:-UTC}
@@ -33,18 +36,19 @@ services:
       GITLAB_URL: ${GITLAB_URL:-https://gitlab.com}
       GITLAB_RUNNER_TOKEN_SHELL: ${GITLAB_RUNNER_TOKEN_SHELL:-}
       GITLAB_RUNNER_NAME: ${GITLAB_RUNNER_NAME:-shell-on-k8s-proxyhost}
-      # Tags/locked/run-untagged: set in GitLab UI when creating the runner (glrt- register rejects CLI flags)
+      # Теги / locked / run-untagged задаются в UI GitLab при создании runner (glrt-)
       FORCE_REREGISTER: ${FORCE_REREGISTER:-false}
       SSH_PORT: ${SSH_PORT:-2222}
-      # Present only to warn in logs if still set — docker executor not supported
+      # Если задан — только предупреждение в логах; docker executor не поддерживается
       GITLAB_RUNNER_TOKEN_DOCKER: ${GITLAB_RUNNER_TOKEN_DOCKER:-}
-    # Non-swarm resource limits (Compose applies these directly)
+    # Лимиты ресурсов (Compose применяет напрямую, не только в Swarm)
     cpus: ${CPU_LIMIT:-0.5}
     mem_limit: ${MEMORY_LIMIT:-512m}
     mem_reservation: ${MEMORY_RESERVATION:-128m}
     networks:
       - k8s-network
     healthcheck:
+      # Контейнер жив, если работает sshd
       test: ["CMD-SHELL", "pgrep -x sshd >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
@@ -52,6 +56,7 @@ services:
       start_period: 15s
 
 volumes:
+  # Persistent-конфиг GitLab Runner (config.toml)
   gitlab-runner-config:
 
 networks:
